@@ -44,8 +44,6 @@ miniembed/
 |   |-- basic_usage.py       # Encoding & similarity
 |   |-- semantic_search.py   # Document retrieval
 |   |-- clustering.py        # Text clustering with K-Means
-|-- tests/                   # Test suite
-|   |-- test_model.py        # Unit tests for all components
 |-- data/
     |-- sample_data.jsonl    # 10-pair demo dataset
 ```
@@ -113,23 +111,6 @@ A full-featured Streamlit dashboard for exploring the model's capabilities witho
 
 ```bash
 streamlit run demo.py
-```
-
----
-
-## Testing (`tests/test_model.py`)
-
-The test suite validates every layer of the system:
-
-| Test Category | What It Checks |
-|---|---|
-| **Tokenizer** | Vocabulary integrity, padding/truncation, special token handling (`[CLS]`, `[SEP]`, `[PAD]`), unknown word mapping |
-| **Architecture** | Output dimensions, gradient flow, numerical stability, embedding collapse detection |
-| **L2 Normalization** | Ensures all output embeddings lie on the unit hypersphere (norm = 1.0) |
-| **End-to-End** | Full pipeline from raw string to tokenization to encoding to normalized embedding |
-
-```bash
-pytest tests/test_model.py -v
 ```
 
 ---
