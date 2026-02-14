@@ -36,7 +36,8 @@ miniembed/
 |   |-- inference.py         # High-level API for encoding & search
 |-- models/
 |   |-- mini/                # Pre-trained Mini model
-|       |-- model.pt         # Pre-trained weights (~42 MB)
+|       |-- model.safetensors # Pre-trained weights (Safe & Fast)
+|       |-- model.pt         # Pre-trained weights (Legacy)
 |       |-- config.json      # Architecture blueprint
 |       |-- tokenizer.json   # 30K vocabulary
 |       |-- training_info.json  # Training metadata
@@ -48,7 +49,7 @@ miniembed/
     |-- sample_data.jsonl    # 10-pair demo dataset
 ```
 
-> **Note:** Pre-trained weights (`model.pt`, ~42 MB) are included in this repository. Clone and use immediately.
+> **Note:** Pre-trained weights (`model.safetensors` / `model.pt`, ~42 MB) are included in this repository. Clone and use immediately. `.safetensors` is recommended for security and faster loading.
 
 ---
 
@@ -159,7 +160,7 @@ The pre-trained model was trained on ~3.8 million text pairs from the following 
 
 ## Performance
 
-Results from the pre-trained Mini model (trained on Mac M4 Pro, ~49 hours):
+Results from the pre-trained Mini model:
 
 | Metric | Value |
 |---|---|

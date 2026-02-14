@@ -78,6 +78,7 @@ data/*
 # Users should download weights separately or train their own.
 # We keep config.json, tokenizer.json, and training_info.json for reference.
 models/*/model.pt
+models/*/model.safetensors
 
 # ── Misc large files ──
 *.bin

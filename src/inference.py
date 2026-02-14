@@ -125,7 +125,18 @@ class EmbeddingModelManager:
             pad_token_id=config['pad_token_id']
         )
         
-        state_dict = torch.load(model_dir / 'model.pt', map_location=device, weights_only=True)
+        # Load weights (prefer safetensors)
+        st_path = model_dir / 'model.safetensors'
+        pt_path = model_dir / 'model.pt'
+        
+        if st_path.exists():
+            from safetensors.torch import load_file
+            state_dict = load_file(str(st_path), device=device)
+        elif pt_path.exists():
+            state_dict = torch.load(pt_path, map_location=device, weights_only=True)
+        else:
+            raise FileNotFoundError(f"Neither model.safetensors nor model.pt found in {model_dir}")
+            
         model.load_state_dict(state_dict)
         model = model.to(device)
         model.eval()
@@ -154,7 +165,7 @@ class EmbeddingModelManager:
         # Download the full model snapshot
         local_dir = snapshot_download(
             repo_id=repo_id,
-            allow_patterns=["config.json", "model.pt", "tokenizer.json", "training_info.json"],
+            allow_patterns=["config.json", "model.safetensors", "model.pt", "tokenizer.json", "training_info.json"],
         )
         
         return local_dir
