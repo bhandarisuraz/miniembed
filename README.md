@@ -1,86 +1,59 @@
+---
+language: en
+license: mit
+tags:
+  - text-embedding
+  - sentence-similarity
+  - semantic-search
+  - product-matching
+  - transformer
+  - pytorch
+  - from-scratch
+library_name: pytorch
+pipeline_tag: sentence-similarity
+model-index:
+  - name: MiniEmbed-Mini
+    results: []
+---
+
 # MiniEmbed: Tiny, Powerful Embedding Models from Scratch
 
-**MiniEmbed** is a research-grade toolkit for training and deploying ultra-compact text embedding models (Bi-Encoders) built entirely from scratch in PyTorch. While the industry chases billion-parameter giants, MiniEmbed proves that a **~42 MB / 10.8M parameter** model can deliver production-grade semantic intelligence for specialized domains.
+**MiniEmbed** is an ultra-compact text embedding model (Bi-Encoder) built entirely from scratch in PyTorch. No HuggingFace Transformers, no pre-trained weights -- just pure PyTorch.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-[![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org)
-[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-orange)](https://huggingface.co/surazbhandari/miniembed)
+**GitHub:** [github.com/bhandarisuraz/miniembed](https://github.com/bhandarisuraz/miniembed) (full repo with examples, tests, interactive demo, and documentation)
 
----
-
-## What Can MiniEmbed Do?
-
-| Capability | Description |
+| Spec | Value |
 |---|---|
-| **Semantic Search** | Find meaning, not just keywords. Understands that *"kitten"* is similar to *"cat"*. |
-| **Re-Ranking** | Sort candidates by true semantic relevance. Eliminates false positives. |
-| **Clustering** | Group thousands of texts into logical categories automatically. |
-| **Product Matching** | Match identical items across stores, even with messy or inconsistent titles. |
-| **Text Encoding** | Convert any text into a dense 256-dimensional vector for downstream tasks. |
-
----
-
-## Project Structure
-
-```
-miniembed/
-|-- README.md               # You are here
-|-- LICENSE                  # MIT License
-|-- requirements.txt         # Python dependencies
-|-- demo.py                  # Interactive Streamlit demo
-|-- src/                     # Core library
-|   |-- __init__.py
-|   |-- model.py             # Transformer architecture (from scratch)
-|   |-- tokenizer.py         # Custom word-level tokenizer
-|   |-- inference.py         # High-level API for encoding & search
-|-- models/
-|   |-- mini/                # Pre-trained Mini model
-|       |-- model.safetensors # Pre-trained weights (Safe & Fast)
-|       |-- model.pt         # Pre-trained weights (Legacy)
-|       |-- config.json      # Architecture blueprint
-|       |-- tokenizer.json   # 30K vocabulary
-|       |-- training_info.json  # Training metadata
-|-- examples/                # Ready-to-run scripts
-|   |-- basic_usage.py       # Encoding & similarity
-|   |-- semantic_search.py   # Document retrieval
-|   |-- clustering.py        # Text clustering with K-Means
-|-- data/
-    |-- sample_data.jsonl    # 10-pair demo dataset
-```
-
-> **Note:** Pre-trained weights (`model.safetensors` / `model.pt`, ~42 MB) are included in this repository. Clone and use immediately. `.safetensors` is recommended for security and faster loading.
-
----
+| Parameters | ~10.8M |
+| Model Size | ~42 MB |
+| Embedding Dim | 256 |
+| Vocab Size | 30,000 |
+| Max Seq Length | 128 tokens |
+| Architecture | 4-layer Transformer Encoder |
+| Pooling | Mean Pooling + L2 Normalization |
+| Training Loss | MNRL (Multiple Negatives Ranking Loss) |
+| Training Data | ~3.8M pairs (NQ, GooAQ, MSMARCO, WDC, ECInstruct) |
 
 ## Quick Start
 
-### 1. Install Dependencies
 ```bash
-git clone https://github.com/bhandarisuraz/miniembed.git
-cd miniembed
-pip install -r requirements.txt
+pip install torch numpy scikit-learn huggingface_hub
 ```
 
-### 2. Use the Model
-
-The pre-trained Mini model is included in `models/mini/`. Alternatively, you can load it directly from Hugging Face:
-
 ```python
+from huggingface_hub import snapshot_download
+
+# Download model (one-time)
+model_dir = snapshot_download("surazbhandari/miniembed")
+
+# Add src to path
+import sys
+sys.path.insert(0, model_dir)
+
 from src.inference import EmbeddingInference
 
-# Option A: From local files
-model = EmbeddingInference.from_pretrained("models/mini")
-
-# Option B: Direct from Hugging Face (auto-downloads)
+# Load -- just like sentence-transformers!
 model = EmbeddingInference.from_pretrained("surazbhandari/miniembed")
-```
-
-### 3. Try It Instantly
-```python
-from src.inference import EmbeddingInference
-
-model = EmbeddingInference.from_pretrained("models/mini")
 
 # Similarity
 score = model.similarity("Machine learning is great", "AI is wonderful")
@@ -91,115 +64,90 @@ docs = ["Python is great for AI", "I love pizza", "Neural networks learn pattern
 results = model.search("deep learning frameworks", docs, top_k=2)
 for r in results:
     print(f"  [{r['score']:.3f}] {r['text']}")
+# [0.498] Neural networks learn patterns
+# [0.413] Python is great for AI
+
+# Clustering
+result = model.cluster_texts(["ML is cool", "Pizza is food", "AI rocks"], n_clusters=2)
+# Cluster 1: ['Pizza is food']
+# Cluster 2: ['ML is cool', 'AI rocks']
 ```
 
-For full Hugging Face integration, ensure you have `huggingface_hub` installed:
-```bash
-pip install huggingface_hub
-```
-
----
-
-## Interactive Demo (`demo.py`)
-
-A full-featured Streamlit dashboard for exploring the model's capabilities without writing code:
-
-- **Similarity** -- Real-time cosine similarity between any two texts.
-- **Semantic Search** -- Rank a custom document set against your query.
-- **Clustering** -- Automatically categorize items using K-Means.
-- **Text Encoding** -- Inspect raw 256-D vectors and their statistics.
-- **CSV Matcher** -- Match records between two CSV files for deduplication or cross-platform product mapping.
+## Also Available via GitHub
 
 ```bash
-streamlit run demo.py
+git clone https://github.com/bhandarisuraz/miniembed.git
+cd miniembed
+pip install -r requirements.txt
+
+python -c "
+from src.inference import EmbeddingInference
+model = EmbeddingInference.from_pretrained('models/mini')
+print(model.similarity('hello world', 'hi there'))
+"
 ```
 
----
+## Capabilities
+
+- **Semantic Search** -- Find meaning-based matches, not keyword overlap.
+- **Re-Ranking** -- Sort candidates by true semantic relevance.
+- **Clustering** -- Group texts into logical categories automatically.
+- **Product Matching** -- Match items across platforms with messy titles.
 
 ## Architecture
 
-MiniEmbed uses a **custom 4-layer Transformer encoder** built from scratch -- no HuggingFace, no pre-trained weights:
+Custom 4-layer Transformer encoder built from first principles:
 
-| Component | Specification |
+- Token Embedding (30K vocab) + Sinusoidal Positional Encoding
+- 4x Pre-LayerNorm Transformer Encoder Layers
+- Multi-Head Self-Attention (4 heads, d_k=64)
+- Position-wise Feed-Forward (GELU activation, d_ff=1024)
+- Mean Pooling over non-padded tokens
+- L2 Normalization (unit hypersphere projection)
+
+## Training
+
+Trained on ~3.8 million text pairs from public datasets:
+
+| Dataset | Type |
 |---|---|
-| Embedding Dimension | 256 |
-| Attention Heads | 4 |
-| Transformer Layers | 4 |
-| Feed-Forward Dimension | 1,024 |
-| Vocabulary Size | 30,000 |
-| Max Sequence Length | 128 tokens |
-| Total Parameters | ~10.8M |
-| Model Size on Disk | ~42 MB |
-| Pooling Strategy | Mean Pooling + L2 Normalization |
+| Natural Questions (NQ) | Q&A / General |
+| GooAQ | Knowledge Search |
+| WDC Product Matching | E-commerce |
+| ECInstruct | E-commerce Tasks |
+| MS MARCO | Web Search |
 
-### Training Objective
+**Training details:**
+- Training time: ~49 hours
+- Final loss: 0.0748
+- Optimizer: AdamW
+- Batch size: 256
 
-Training uses **Multiple Negatives Ranking Loss (MNRL)**, the industry-standard contrastive objective for Bi-Encoders:
+## Files
 
-$$\mathcal{L} = -\sum_{i=1}^{n} \log \frac{e^{sim(q_i, p_i) / \tau}}{\sum_{j=1}^{n} e^{sim(q_i, p_j) / \tau}}$$
-
-All embeddings are **L2-normalized**, projecting text onto a unit hypersphere where cosine similarity equals dot product -- enabling ultra-fast nearest-neighbor search.
-
----
-
-## Training Data Sources
-
-The pre-trained model was trained on ~3.8 million text pairs from the following open-source datasets:
-
-| Dataset | Type | Source |
-|---|---|---|
-| **Natural Questions (NQ)** | Q&A / General | [HuggingFace](https://huggingface.co/datasets/google-research-datasets/natural_questions) |
-| **GooAQ** | Knowledge Search | [HuggingFace](https://huggingface.co/datasets/sentence-transformers/gooaq) |
-| **WDC Product Matching** | E-commerce | [HuggingFace](https://huggingface.co/datasets/wdc/products-2017) |
-| **ECInstruct** | E-commerce Tasks | [HuggingFace](https://huggingface.co/datasets/NingLab/ECInstruct) |
-| **MS MARCO** | Web Search | [HuggingFace](https://huggingface.co/datasets/microsoft/ms_marco) |
-
-> **Legal Disclaimer**: These public datasets belong to their respective stakeholders and creators. Any copyright, licensing, or legal usage constraints must be consulted with the original authors individually.
-
----
-
-## Performance
-
-Results from the pre-trained Mini model:
-
-| Metric | Value |
-|---|---|
-| **Training Loss** | 0.0748 (final) |
-| **Training Samples** | 3,817,707 pairs |
-| **Throughput** | ~1,000 samples/sec |
-| **Encoding Latency** | ~3-5 ms per text |
-| **Training Epochs** | 10 |
-
----
-
-## Examples
-
-Ready-to-run scripts in the `examples/` folder:
-
-```bash
-cd examples
-
-# Basic encoding and similarity
-python basic_usage.py
-
-# Document retrieval
-python semantic_search.py
-
-# Text clustering with K-Means
-python clustering.py
+```
+surazbhandari/miniembed
+|-- README.md           # This model card
+|-- config.json         # Architecture config
+|-- model.safetensors   # Pre-trained weights (Safe & Fast)
+|-- model.pt            # Pre-trained weights (Legacy PyTorch)
+|-- tokenizer.json      # 30K word-level vocabulary
+|-- training_info.json  # Training metadata
+|-- src/
+    |-- __init__.py
+    |-- model.py        # Full architecture code
+    |-- tokenizer.py    # Tokenizer implementation
+    |-- inference.py    # High-level API (supports HF auto-download)
 ```
 
----
+## Limitations
 
-## Roadmap
-
-- **mini-product** -- A further fine-tuned version of the Mini model, specialized for high-accuracy **product matching** is Coming soon...
-
----
+- Word-level tokenizer (no subword/BPE) -- unknown words map to [UNK]
+- 128 token max sequence length
+- Trained primarily on English text
+- Best suited for short-form text (queries, product titles, sentences)
 
 ## Citation
-
-If you use MiniEmbed in your research, please cite:
 
 ```bibtex
 @software{Bhandari_MiniEmbed_2026,
@@ -211,10 +159,6 @@ If you use MiniEmbed in your research, please cite:
 }
 ```
 
----
-
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
-
-Explore, learn, and build smaller, smarter AI.
+MIT
