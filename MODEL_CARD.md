@@ -55,9 +55,18 @@ from src.inference import EmbeddingInference
 # Load -- just like sentence-transformers!
 model = EmbeddingInference.from_pretrained("surazbhandari/miniembed")
 
-# Similarity
+# 1. Similarity
 score = model.similarity("Machine learning is great", "AI is wonderful")
 print(f"Similarity: {score:.4f}")  # 0.4287
+
+# 2. Normal Embeddings
+embeddings = model.encode(["Machine learning is great", "AI is wonderful"])
+
+# 3. Manual Cosine Similarity
+# Since embeddings are L2-normalized, dot product is cosine similarity
+import numpy as np
+score = np.dot(embeddings[0], embeddings[1])
+print(f"Similarity: {score:.4f}")
 
 # Semantic Search
 docs = ["Python is great for AI", "I love pizza", "Neural networks learn patterns"]
