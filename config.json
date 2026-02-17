@@ -4,6 +4,5 @@
     "num_heads": 4,
     "num_layers": 4,
     "d_ff": 1024,
-    "max_seq_len": 128,
-    "pad_token_id": 0
+    "max_seq_len": 128
 }

@@ -18,11 +18,18 @@ This is a specialized version of **MiniEmbed**, fine-tuned exclusively for **hig
 Unlike general-purpose embedding models, this model is designed to determine if two product listings—often with different titles, specifications, or formatting—refer to the **exact same physical item**.
 
 ## Use Case
+**E-commerce Product Matching & Entity Resolution**
 
-**Cross-Catalog Product Matching**
-*   **Scenario**: You have a catalog (Site A) and want to find matching products in a competitor's catalog (Site B).
-*   **Challenge**: Titles differ ("iPhone 14 128GB" vs "Apple iPhone 14 Midnight 128GB"), specs are formatted differently, and noise/distractors exist.
-*   **Solution**: This model maps semantically identical products to the same vector space, ignoring irrelevant noise while paying attention to critical specs (GB, Model Number, Color).
+This model is fine-tuned to solve the "Same Product, Different Description" problem in e-commerce:
+
+*   **Marketplace Aggregation**: Unifying listings from Amazon, Walmart, and eBay into a single catalog.
+*   **Competitor Analysis**: Matching your inventory against competitors to track pricing.
+*   **Data Cleaning**: Removing duplicates in databases where titles vary slightly (e.g., "Nike Air Max" vs "Nike Men's Air Max Shoe").
+
+**Example Challenges Handled:**
+*   **Variations**: "iPhone 14 128GB" vs "Apple iPhone 14 Midnight 128GB"
+*   **Missing Attributes**: "Sony Headphones" vs "Sony WH-1000XM5 Noise Canceling Headphones"
+*   **Formatting Differences**: "5-Pack T-Shirts" vs "T-Shirt (Pack of 5)"
 
 ## Interactive Demo
 
