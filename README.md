@@ -32,7 +32,7 @@ To run locally:
 
 ```bash
 pip install -r requirements.txt
-streamlit run app.py
+streamlit run demo.py
 ```
 
 ## Model Architecture

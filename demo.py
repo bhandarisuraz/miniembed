@@ -22,7 +22,7 @@ Key use case: **Matching Scale A (e.g., Your Catalog) vs Site B (e.g., Competito
 @st.cache_resource
 def load_model():
     model_path = "."
-    if not os.path.exists("pytorch_model.bin"):
+    if not os.path.exists("pytorch_model.bin") and not os.path.exists("model.safetensors"):
         return None
     return EmbeddingInference.from_pretrained(model_path)
 
