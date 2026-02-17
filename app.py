@@ -10,9 +10,9 @@ sys.path.append(os.getcwd())
 
 from src.inference import EmbeddingInference
 
-st.set_page_config(page_title="Product Model Demo", page_icon="🛍️", layout="wide")
+st.set_page_config(page_title="Product Model Demo", layout="wide")
 
-st.title("🛍️ Product Model Identity Verification Demo")
+st.title("Product Model Identity Verification Demo")
 st.markdown("""
 This demo showcases the **Product Model's** ability to verify if two product listings represent the same physical item.
 Key use case: **Matching Scale A (e.g., Your Catalog) vs Site B (e.g., Competitor/Marketplace)**.
@@ -29,10 +29,10 @@ def load_model():
 model = load_model()
 
 if not model:
-    st.error("❌ Model not found in `models/product`. Please train the model first.")
+    st.error("Model not found in `models/product`. Please train the model first.")
     st.stop()
 
-st.success(f"✅ Product Model Loaded! (Vocab: {len(model.tokenizer.word_to_id)}, Dim: {model.model.d_model})")
+st.success(f"Product Model Loaded! (Vocab: {len(model.tokenizer.word_to_id)}, Dim: {model.model.d_model})")
 
 # Settings
 st.sidebar.header("Settings")
@@ -65,7 +65,7 @@ Sony WH-1000XM4
 Nintendo Switch Lite"""
 
 # Button to load large dataset
-if st.button("📚 Load Large Benchmark Dataset (100+ items)"):
+if st.button("Load Large Benchmark Dataset (100+ items)"):
     # Generate large dataset
     base_products = [
         ("iPhone 14 Pro 128GB Space Black", "Apple iPhone 14 Pro (128 GB) - Space Black", "iPhone 14 Pro Max 128GB"),
@@ -155,7 +155,7 @@ with col2:
     site_b_text = st.text_area("One product per line", key="txt_b", height=300)
 
 # Process
-if st.button("🚀 Run Comparison", type="primary"):
+if st.button("Run Comparison", type="primary"):
     site_a = [x.strip() for x in site_a_text.split('\n') if x.strip()]
     site_b = [x.strip() for x in site_b_text.split('\n') if x.strip()]
     
@@ -183,14 +183,14 @@ if st.button("🚀 Run Comparison", type="primary"):
                 "Site A Product": product_a,
                 "Best Match (Site B)": match_product,
                 "Confidence": score,
-                "Status": "✅ Match" if is_match else "❌ Different"
+                "Status": "Match" if is_match else "Different"
             })
         else:
             results.append({
                 "Site A Product": product_a,
                 "Best Match (Site B)": "No candidate found",
                 "Confidence": 0.0,
-                "Status": "❌ No Data"
+                "Status": "No Data"
             })
         
         progress_bar.progress((i + 1) / len(site_a))
@@ -202,7 +202,7 @@ if st.button("🚀 Run Comparison", type="primary"):
     
     # Styling
     def color_status(val):
-        color = '#d4edda' if val == "✅ Match" else '#f8d7da'
+        color = '#d4edda' if val == "Match" else '#f8d7da'
         return f'background-color: {color}'
 
     st.dataframe(
@@ -212,5 +212,5 @@ if st.button("🚀 Run Comparison", type="primary"):
     )
     
     # Stats
-    match_count = df[df['Status'] == "✅ Match"].shape[0]
+    match_count = df[df['Status'] == "Match"].shape[0]
     st.metric("Total Matches Found", f"{match_count} / {len(site_a)}")
