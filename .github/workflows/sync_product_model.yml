@@ -1,4 +1,4 @@
-name: Sync Product Model to HF Space
+name: Sync Product Model to HF Hub
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync-to-space:
+  sync-to-model:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: pip install huggingface_hub
 
-      - name: Push to Hugging Face Space
+      - name: Push to Hugging Face Model
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
@@ -34,16 +34,16 @@ jobs:
           # Initialize API
           api = HfApi(token=os.environ['HF_TOKEN'])
           
-          # TARGET REPO: Use 'surazbhandari/miniembed-product' (Space)
+          # TARGET MODEL REPO: surazbhandari/miniembed-product
           repo_id = 'surazbhandari/miniembed-product'
           
-          print(f'Syncing miniembed-product branch to Space: {repo_id}...')
+          print(f'Syncing miniembed-product branch to Model Repo: {repo_id}...')
           
-          # Upload the current directory to the HF Space.
+          # Upload the current directory to the HF Model Repo.
           api.upload_folder(
               folder_path='.',
               repo_id=repo_id,
-              repo_type='space',  # IMPORTANT: This is a Space (Streamlit app), not a model
+              repo_type='model',  # Setting explicitly to 'model'
               commit_message='Sync from GitHub Actions',
               ignore_patterns=['.github*', '.git*', '.DS_Store']
           )

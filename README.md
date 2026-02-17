@@ -1,12 +1,14 @@
 ---
 title: MiniEmbed Product Matcher
+emoji: ""
 colorFrom: blue
 colorTo: indigo
-sdk: streamlit
-sdk_version: 1.31.0
-app_file: app.py
 pinned: false
 license: mit
+library_name: generic
+tags:
+- embeddings
+- product-matching
 ---
 
 # MiniEmbed: Product Matching Model
