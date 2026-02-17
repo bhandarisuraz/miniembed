@@ -64,6 +64,9 @@ else:
     print(f"Different products. (Score: {score:.4f})")
 ```
 
-## License
+## Automated Sync
+
+This repository is automatically synced to Hugging Face Spaces via GitHub Actions.
+
 
 MIT
