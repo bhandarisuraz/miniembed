@@ -1,0 +1,11 @@
+torch
+numpy
+tqdm
+streamlit
+plotly
+scikit-learn
+pandas
+psutil
+sentence-transformers
+huggingface_hub
+safetensors
