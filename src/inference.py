@@ -78,20 +78,15 @@ class EmbeddingModelManager:
     @staticmethod
     def load_model(model_dir: str, device: str = None) -> Tuple[MiniTransformerEmbedding, SimpleTokenizer]:
         """
-        Load model and tokenizer from a local directory or HuggingFace repo.
+        Load model and tokenizer from directory.
         
         Args:
-            model_dir: Local directory path OR HuggingFace repo ID 
-                       (e.g., "surazbhandari/miniembed")
+            model_dir: Directory containing saved model
             device: Device to load model on ('cpu', 'cuda', 'mps')
             
         Returns:
             (model, tokenizer) tuple
         """
-        # Auto-detect HuggingFace repo ID (contains "/" but is not a local path)
-        if '/' in model_dir and not os.path.exists(model_dir):
-            model_dir = EmbeddingModelManager._download_from_hub(model_dir)
-        
         model_dir = Path(model_dir)
         
         if device is None:
@@ -104,12 +99,35 @@ class EmbeddingModelManager:
         
         # 1. Load config
         config_path = model_dir / 'config.json'
-                
-        with open(config_path, 'r') as f:
-            config = json.load(f)
+        
+        # If loading a checkpoint, the config might be in the 'models' folder instead
+        if not config_path.exists() and 'checkpoints' in str(model_dir):
+            potential_models_dir = Path(str(model_dir).replace('checkpoints', 'models'))
+            if (potential_models_dir / 'config.json').exists():
+                config_path = potential_models_dir / 'config.json'
+        
+        if config_path.exists():
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+        else:
+            # Fallback for Product Model (Hardcoded defaults)
+            print("Warning: config.json not found. Using default Product Model configuration.")
+            config = {
+                "vocab_size": 50000,
+                "d_model": 256,
+                "num_heads": 4,
+                "num_layers": 4,
+                "d_ff": 1024,
+                "max_seq_len": 128,
+                "pad_token_id": 0
+            }
         
         # 2. Load tokenizer
         tokenizer_path = model_dir / 'tokenizer.json'
+        if not tokenizer_path.exists() and 'checkpoints' in str(model_dir):
+            potential_models_dir = Path(str(model_dir).replace('checkpoints', 'models'))
+            if (potential_models_dir / 'tokenizer.json').exists():
+                tokenizer_path = potential_models_dir / 'tokenizer.json'
 
         tokenizer = SimpleTokenizer(vocab_size=config['vocab_size'])
         tokenizer.load(str(tokenizer_path))
@@ -122,53 +140,31 @@ class EmbeddingModelManager:
             num_layers=config['num_layers'],
             d_ff=config['d_ff'],
             max_seq_len=config['max_seq_len'],
-            pad_token_id=config['pad_token_id']
+            pad_token_id=config.get('pad_token_id', 0)
         )
         
-        # Load weights (prefer safetensors)
-        st_path = model_dir / 'model.safetensors'
+        # Try safetensors first (preferred), then pytorch_model.bin, then model.pt
+        from safetensors.torch import load_file
+        
+        safe_path = model_dir / 'model.safetensors'
+        bin_path = model_dir / 'pytorch_model.bin'
         pt_path = model_dir / 'model.pt'
         
-        if st_path.exists():
-            from safetensors.torch import load_file
-            state_dict = load_file(str(st_path), device=device)
+        if safe_path.exists():
+            state_dict = load_file(safe_path)
+        elif bin_path.exists():
+            state_dict = torch.load(bin_path, map_location=device, weights_only=True)
         elif pt_path.exists():
             state_dict = torch.load(pt_path, map_location=device, weights_only=True)
         else:
-            raise FileNotFoundError(f"Neither model.safetensors nor model.pt found in {model_dir}")
+            raise FileNotFoundError(f"No model weights found in {model_dir}")
             
+        # state_dict loaded, now load into model
         model.load_state_dict(state_dict)
         model = model.to(device)
         model.eval()
         
         return model, tokenizer
-    
-    @staticmethod
-    def _download_from_hub(repo_id: str) -> str:
-        """
-        Download model files from a HuggingFace repository.
-        
-        Args:
-            repo_id: HuggingFace repo ID (e.g., "surazbhandari/miniembed")
-            
-        Returns:
-            Local directory path containing the downloaded files.
-        """
-        try:
-            from huggingface_hub import hf_hub_download, snapshot_download
-        except ImportError:
-            raise ImportError(
-                "huggingface_hub is required to download models from HuggingFace. "
-                "Install it with: pip install huggingface_hub"
-            )
-        
-        # Download the full model snapshot
-        local_dir = snapshot_download(
-            repo_id=repo_id,
-            allow_patterns=["config.json", "model.safetensors", "model.pt", "tokenizer.json", "training_info.json"],
-        )
-        
-        return local_dir
     
     @staticmethod
     def list_models(base_dir: str = "models") -> List[str]:
@@ -188,11 +184,7 @@ class EmbeddingInference:
     High-level inference API for the embedding model.
     
     Usage:
-        # From local directory
-        model = EmbeddingInference.from_pretrained("./models/mini")
-        
-        # From HuggingFace
-        model = EmbeddingInference.from_pretrained("surazbhandari/miniembed")
+        model = EmbeddingInference.from_pretrained("./model")
         
         # Encode texts
         embeddings = model.encode(["Hello world", "Machine learning"])
@@ -218,19 +210,12 @@ class EmbeddingInference:
         self.model.eval()
     
     @classmethod
-    def from_pretrained(cls, model_dir: str, device: str = None):
-        """
-        Load model from a local directory or HuggingFace repo ID.
-        
-        Args:
-            model_dir: Local path (e.g., "models/mini") or 
-                       HuggingFace repo ID (e.g., "surazbhandari/miniembed")
-            device: Device to load on ('cpu', 'cuda', 'mps'). Auto-detected if None.
-        """
+    def from_pretrained(cls, model_dir: str, device: str = None, max_length: int = 128):
+        """Load from saved model directory."""
         model, tokenizer = EmbeddingModelManager.load_model(model_dir, device)
         if device is None:
             device = next(model.parameters()).device.type
-        return cls(model, tokenizer, device)
+        return cls(model, tokenizer, device, max_length=max_length)
     
     def encode(
         self, 

@@ -1,3 +1,15 @@
+---
+title: MiniEmbed Product Matcher
+emoji: 🛍️
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+sdk_version: 1.31.0
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # MiniEmbed: Tiny, Powerful Embedding Models from Scratch
 
 **MiniEmbed** is a research-grade toolkit for training and deploying ultra-compact text embedding models (Bi-Encoders) built entirely from scratch in PyTorch. While the industry chases billion-parameter giants, MiniEmbed proves that a **~42 MB / 10.8M parameter** model can deliver production-grade semantic intelligence for specialized domains.
@@ -5,7 +17,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org)
-[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-orange)](https://huggingface.co/surazbhandari/miniembed)
 
 ---
 
@@ -36,8 +47,6 @@ miniembed/
 |   |-- inference.py         # High-level API for encoding & search
 |-- models/
 |   |-- mini/                # Pre-trained Mini model
-|       |-- model.safetensors # Pre-trained weights (Safe & Fast)
-|       |-- model.pt         # Pre-trained weights (Legacy)
 |       |-- config.json      # Architecture blueprint
 |       |-- tokenizer.json   # 30K vocabulary
 |       |-- training_info.json  # Training metadata
@@ -45,11 +54,13 @@ miniembed/
 |   |-- basic_usage.py       # Encoding & similarity
 |   |-- semantic_search.py   # Document retrieval
 |   |-- clustering.py        # Text clustering with K-Means
+|-- tests/                   # Test suite
+|   |-- test_model.py        # Unit tests for all components
 |-- data/
     |-- sample_data.jsonl    # 10-pair demo dataset
 ```
 
-> **Note:** Pre-trained weights (`model.safetensors` / `model.pt`, ~42 MB) are included in this repository. Clone and use immediately. `.safetensors` is recommended for security and faster loading.
+> **Note:** Model weights (`model.pt`, ~42 MB) are not included in this repository due to size constraints. See [Downloading the Pre-trained Model](#downloading-the-pre-trained-model) below.
 
 ---
 
@@ -62,18 +73,11 @@ cd miniembed
 pip install -r requirements.txt
 ```
 
-### 2. Use the Model
-
-The pre-trained Mini model is included in `models/mini/`. Alternatively, you can load it directly from Hugging Face:
-
-```python
-from src.inference import EmbeddingInference
-
-# Option A: From local files
-model = EmbeddingInference.from_pretrained("models/mini")
-
-# Option B: Direct from Hugging Face (auto-downloads)
-model = EmbeddingInference.from_pretrained("surazbhandari/miniembed")
+### 2. Downloading the Pre-trained Model
+Download the pre-trained `model.pt` and place it in `models/mini/`:
+```bash
+# Option A: Download from Hugging Face (coming soon)
+# Option B: Train your own (see Training section below)
 ```
 
 ### 3. Try It Instantly
@@ -84,18 +88,13 @@ model = EmbeddingInference.from_pretrained("models/mini")
 
 # Similarity
 score = model.similarity("Machine learning is great", "AI is wonderful")
-print(f"Similarity: {score:.4f}")  # 0.4287
+print(f"Similarity: {score:.4f}")  # High score
 
 # Semantic Search
 docs = ["Python is great for AI", "I love pizza", "Neural networks learn patterns"]
 results = model.search("deep learning frameworks", docs, top_k=2)
 for r in results:
     print(f"  [{r['score']:.3f}] {r['text']}")
-```
-
-For full Hugging Face integration, ensure you have `huggingface_hub` installed:
-```bash
-pip install huggingface_hub
 ```
 
 ---
@@ -112,6 +111,23 @@ A full-featured Streamlit dashboard for exploring the model's capabilities witho
 
 ```bash
 streamlit run demo.py
+```
+
+---
+
+## Testing (`tests/test_model.py`)
+
+The test suite validates every layer of the system:
+
+| Test Category | What It Checks |
+|---|---|
+| **Tokenizer** | Vocabulary integrity, padding/truncation, special token handling (`[CLS]`, `[SEP]`, `[PAD]`), unknown word mapping |
+| **Architecture** | Output dimensions, gradient flow, numerical stability, embedding collapse detection |
+| **L2 Normalization** | Ensures all output embeddings lie on the unit hypersphere (norm = 1.0) |
+| **End-to-End** | Full pipeline from raw string to tokenization to encoding to normalized embedding |
+
+```bash
+pytest tests/test_model.py -v
 ```
 
 ---
@@ -160,7 +176,7 @@ The pre-trained model was trained on ~3.8 million text pairs from the following 
 
 ## Performance
 
-Results from the pre-trained Mini model:
+Results from the pre-trained Mini model (trained on Mac M4 Pro, ~49 hours):
 
 | Metric | Value |
 |---|---|
@@ -218,3 +234,8 @@ If you use MiniEmbed in your research, please cite:
 MIT License. See [LICENSE](LICENSE) for details.
 
 Explore, learn, and build smaller, smarter AI.
+
+
+//self Notes
+
+python train.py --data data/product_matching_categorized_master.jsonl --name product --size mini --max-samples 1500000 --max-seq-len 128 --epochs 10 --batch-size 256 --learning-rate 3e-5 --warmup-steps 5000 --eval-steps 1000

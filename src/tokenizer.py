@@ -7,6 +7,7 @@ Converts text to token IDs with special tokens.
 
 import re
 import json
+import torch
 from typing import Dict, List, Optional
 from collections import Counter
 from tqdm import tqdm
@@ -96,18 +97,6 @@ class SimpleTokenizer:
         print(f"Vocabulary size: {len(self.word_to_id)}")
     
     def encode(self, text: str, max_length: int = 128) -> Dict:
-        """
-        Encode text to token IDs with attention mask.
-        
-        Args:
-            text: Input text string
-            max_length: Maximum sequence length
-            
-        Returns:
-            Dictionary with 'input_ids' and 'attention_mask' tensors
-        """
-        import torch
-        
         # Tokenize
         tokens = self._tokenize(text)
         
