@@ -45,13 +45,21 @@ streamlit run app.py
 
 ## Usage
 
-You can use the provided `src` library to run inference in your own Python scripts:
+Since this is a custom model, you need to download the code and weights from the Hub:
 
 ```python
-from src.inference import EmbeddingInference
+from huggingface_hub import snapshot_download
+import sys
 
-# Load model from current directory
-model = EmbeddingInference.from_pretrained(".")
+# 1. Download model (one-time)
+model_dir = snapshot_download("surazbhandari/miniembed-product")
+
+# 2. Add to path so we can import 'src'
+sys.path.insert(0, model_dir)
+
+# 3. Load Model
+from src.inference import EmbeddingInference
+model = EmbeddingInference.from_pretrained(model_dir)
 
 # Define two product titles
 product_a = "Sony WH-1000XM5 Wireless Noise Canceling Headphones, Black"
@@ -60,10 +68,7 @@ product_b = "Sony WH1000XM5/B Headphones"
 # Calculate similarity (0 to 1)
 score = model.similarity(product_a, product_b)
 
-if score > 0.82:
-    print(f"It's a match! (Score: {score:.4f})")
-else:
-    print(f"Different products. (Score: {score:.4f})")
+print(f"Similarity: {score:.4f}")
 ```
 
 ## Automated Sync
