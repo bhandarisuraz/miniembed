@@ -78,6 +78,8 @@ for r in results:
 
 # Clustering
 result = model.cluster_texts(["ML is cool", "Pizza is food", "AI rocks"], n_clusters=2)
+for cluster_id, texts in result['texts_by_cluster'].items():
+    print(f"Cluster {cluster_id + 1}: {texts}")
 # Cluster 1: ['Pizza is food']
 # Cluster 2: ['ML is cool', 'AI rocks']
 ```
