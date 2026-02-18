@@ -52,8 +52,8 @@ sys.path.insert(0, model_dir)
 
 from src.inference import EmbeddingInference
 
-# Load -- just like sentence-transformers!
-model = EmbeddingInference.from_pretrained("surazbhandari/miniembed")
+# Load model
+model = EmbeddingInference.from_pretrained(model_dir)
 
 # 1. Similarity
 score = model.similarity("Machine learning is great", "AI is wonderful")
