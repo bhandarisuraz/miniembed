@@ -13,9 +13,9 @@ tags:
 
 # MiniEmbed: Product Matching Model
 
-This is a specialized version of **MiniEmbed**, fine-tuned exclusively for **high-accuracy product matching** (entity resolution). 
+This model uses the same **MiniEmbed** architecture, trained **from scratch** exclusively for **high-accuracy product matching** (entity resolution). 
 
-Unlike general-purpose embedding models, this model is designed to determine if two product listings—often with different titles, specifications, or formatting—refer to the **exact same physical item**.
+It is designed to determine if two product listings—often with different titles, specifications, or formatting—refer to the **exact same physical item**.
 
 ## Use Case
 **E-commerce Product Matching & Entity Resolution**
