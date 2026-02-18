@@ -105,8 +105,21 @@ class EmbeddingModelManager:
         # 1. Load config
         config_path = model_dir / 'config.json'
                 
-        with open(config_path, 'r') as f:
-            config = json.load(f)
+        if config_path.exists():
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+        else:
+            # Fallback defaults matching the MiniEmbed-Mini architecture
+            print("Warning: config.json not found. Using default MiniEmbed-Mini configuration.")
+            config = {
+                "vocab_size": 30000,
+                "d_model": 256,
+                "num_heads": 4,
+                "num_layers": 4,
+                "d_ff": 1024,
+                "max_seq_len": 128,
+                "pad_token_id": 0
+            }
         
         # 2. Load tokenizer
         tokenizer_path = model_dir / 'tokenizer.json'
@@ -122,7 +135,7 @@ class EmbeddingModelManager:
             num_layers=config['num_layers'],
             d_ff=config['d_ff'],
             max_seq_len=config['max_seq_len'],
-            pad_token_id=config['pad_token_id']
+            pad_token_id=config.get('pad_token_id', 0)
         )
         
         # Load weights (prefer safetensors)
@@ -155,18 +168,15 @@ class EmbeddingModelManager:
             Local directory path containing the downloaded files.
         """
         try:
-            from huggingface_hub import hf_hub_download, snapshot_download
+            from huggingface_hub import snapshot_download
         except ImportError:
             raise ImportError(
                 "huggingface_hub is required to download models from HuggingFace. "
                 "Install it with: pip install huggingface_hub"
             )
         
-        # Download the full model snapshot
-        local_dir = snapshot_download(
-            repo_id=repo_id,
-            allow_patterns=["config.json", "model.safetensors", "model.pt", "tokenizer.json", "training_info.json"],
-        )
+        # Download the full repo (including src/ for inference code)
+        local_dir = snapshot_download(repo_id=repo_id)
         
         return local_dir
     
